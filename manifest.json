@@ -1,0 +1,20 @@
+{
+  "name": "Penalidad por Mora — RLGCP",
+  "short_name": "Penalidad Mora",
+  "description": "Calculadora Art. 120 del Reglamento de la Ley General de Contrataciones Públicas",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#7A0000",
+  "theme_color": "#7A0000",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#7A0000">
+<meta name="description" content="Calculadora de penalidad por mora según el Art. 120 del Reglamento de la Ley General de Contrataciones Públicas">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Penalidad Mora">
+<title>Penalidad por Mora · Art. 120 RLGCP</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.svg">
+<style>
+  :root {
+    --rojo:    #7A0000;
+    --rojo-dk: #5A0000;
+    --rojo-lt: #9B1B1B;
+    --oro:     #C8A84B;
+    --oro-lt:  #E8CC7B;
+    --gris-bg: #F5F4F2;
+    --gris-1:  #EBEBEB;
+    --gris-2:  #D0CFCD;
+    --gris-3:  #888;
+    --negro:   #1A1A1A;
+    --blanco:  #FFFFFF;
+    --verde:   #2E6B3A;
+    --verde-lt:#EBF5EE;
+    --font-head: 'Georgia', 'Times New Roman', serif;
+    --font-body: 'Segoe UI', system-ui, sans-serif;
+    --radius: 6px;
+    --shadow: 0 2px 10px rgba(0,0,0,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--gris-bg);
+    color: var(--negro);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── BANNER ACTUALIZACIÓN ── */
+  #update-banner {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    background: var(--oro);
+    color: var(--negro);
+    padding: 10px 16px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    text-align: center;
+  }
+  #update-banner button {
+    background: var(--rojo);
+    color: var(--blanco);
+    border: none;
+    border-radius: 4px;
+    padding: 5px 12px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  /* ── BANNER OFFLINE ── */
+  #offline-banner {
+    display: none;
+    background: #444;
+    color: #fff;
+    text-align: center;
+    padding: 6px 12px;
+    font-size: 0.78rem;
+    letter-spacing: 0.03em;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--rojo);
+    color: var(--blanco);
+    padding: 0;
+  }
+  .header-inner {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 20px 20px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .header-icon {
+    flex-shrink: 0;
+    width: 44px; height: 44px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .header-icon svg { width: 26px; height: 26px; fill: var(--oro); }
+  .header-text h1 {
+    font-family: var(--font-head);
+    font-size: 1.25rem;
+    font-weight: normal;
+    line-height: 1.25;
+    letter-spacing: 0.01em;
+  }
+  .header-text p {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.65);
+    margin-top: 3px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  .norma-band { background: var(--rojo-dk); border-top: 1px solid rgba(255,255,255,0.1); }
+  .norma-band-inner {
+    max-width: 680px; margin: 0 auto;
+    padding: 7px 20px;
+    font-size: 0.72rem; color: var(--oro-lt);
+    letter-spacing: 0.04em;
+  }
+
+  /* ── MAIN ── */
+  main { flex: 1; max-width: 680px; margin: 0 auto; width: 100%; padding: 24px 16px 40px; }
+
+  /* ── CARD ── */
+  .card { background: var(--blanco); border-radius: var(--radius); box-shadow: var(--shadow); padding: 24px; margin-bottom: 16px; }
+  .card-title {
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--rojo);
+    margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--gris-1);
+  }
+
+  /* ── FORM ── */
+  .field-group { display: grid; gap: 16px; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  label { font-size: 0.8rem; font-weight: 600; color: var(--negro); }
+  label span.hint { font-weight: 400; color: var(--gris-3); font-size: 0.75rem; }
+
+  select, input[type="number"] {
+    border: 1.5px solid var(--gris-2);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    font-size: 0.95rem; font-family: var(--font-body); color: var(--negro);
+    background: var(--blanco); transition: border-color 0.15s; width: 100%;
+    -webkit-appearance: none; appearance: none;
+  }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px;
+  }
+  select:focus, input:focus { outline: none; border-color: var(--rojo); }
+
+  .plazo-opciones { display: flex; flex-direction: column; gap: 6px; margin-top: 2px; }
+  .radio-item {
+    display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer;
+    padding: 7px 10px; border-radius: 5px; border: 1.5px solid var(--gris-2);
+    background: var(--gris-bg); transition: border-color 0.15s, background 0.15s;
+  }
+  .radio-item:hover { border-color: var(--rojo-lt); }
+  .radio-item input[type="radio"] { accent-color: var(--rojo); width: 15px; height: 15px; }
+  .radio-item.selected { border-color: var(--rojo); background: #FFF5F5; }
+
+  /* ── RESULTADO ── */
+  .resultado-card { background: var(--blanco); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 16px; }
+  .resultado-header { background: var(--rojo); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+  .resultado-header span { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--oro); }
+  .resultado-body { padding: 22px 24px; }
+  .penalidad-diaria-label { font-size: 0.75rem; color: var(--gris-3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .penalidad-diaria-valor { font-family: var(--font-head); font-size: 2.2rem; color: var(--rojo); line-height: 1; margin-bottom: 16px; }
+  .penalidad-diaria-valor .soles { font-size: 1.1rem; color: var(--gris-3); margin-right: 4px; font-family: var(--font-body); }
+
+  .detalle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--gris-1); }
+  .detalle-item { display: flex; flex-direction: column; gap: 2px; }
+  .detalle-item .det-label { font-size: 0.72rem; color: var(--gris-3); }
+  .detalle-item .det-val { font-size: 0.9rem; font-weight: 600; color: var(--negro); }
+
+  .acumulado-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .acumulado-dias label { font-size: 0.8rem; font-weight: 600; margin-bottom: 4px; display: block; }
+  .dias-input-row { display: flex; align-items: center; gap: 8px; }
+  .dias-input-row input { width: 90px; padding: 8px 10px; font-size: 1rem; text-align: center; }
+  .acumulado-total { text-align: right; }
+  .acumulado-total .label { font-size: 0.72rem; color: var(--gris-3); }
+  .acumulado-total .valor { font-family: var(--font-head); font-size: 1.45rem; color: var(--negro); }
+
+  .tope-bar { margin-top: 14px; padding: 10px 14px; border-radius: 5px; font-size: 0.8rem; display: flex; align-items: flex-start; gap: 8px; }
+  .tope-bar.ok     { background: var(--verde-lt); color: var(--verde); }
+  .tope-bar.warn   { background: #FFF3CD; color: #7A5200; }
+  .tope-bar.danger { background: #FFE8E8; color: var(--rojo); }
+
+  /* ── FÓRMULA ── */
+  .formula-card { background: var(--blanco); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 24px; margin-bottom: 16px; }
+  .formula-card .card-title { margin-bottom: 12px; }
+  .formula-box {
+    background: var(--gris-bg); border: 1px solid var(--gris-1); border-radius: 5px;
+    padding: 14px; text-align: center; font-family: 'Courier New', monospace;
+    font-size: 0.95rem; color: var(--negro); margin-bottom: 12px; line-height: 1.8;
+  }
+  .formula-box .fraction { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 4px; }
+  .formula-box .numerator { border-bottom: 1.5px solid var(--negro); padding-bottom: 2px; font-size: 0.9rem; }
+  .formula-box .denominator { padding-top: 2px; font-size: 0.9rem; }
+  .f-tabla { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+  .f-tabla th { background: var(--gris-1); padding: 7px 10px; text-align: left; font-weight: 700; font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase; }
+  .f-tabla td { padding: 7px 10px; border-bottom: 1px solid var(--gris-1); }
+  .f-tabla tr.activo td { background: #FFF5F5; font-weight: 600; color: var(--rojo); }
+
+  /* ── BOTONES ── */
+  .btn-reset {
+    background: none; border: 1.5px solid var(--gris-2); border-radius: var(--radius);
+    padding: 9px 18px; font-size: 0.82rem; color: var(--gris-3); cursor: pointer;
+    font-family: var(--font-body); transition: border-color 0.15s, color 0.15s;
+  }
+  .btn-reset:hover { border-color: var(--rojo); color: var(--rojo); }
+  .btn-copiar {
+    background: none; border: 1.5px solid var(--gris-2); border-radius: var(--radius);
+    padding: 9px 18px; font-size: 0.82rem; color: var(--gris-3); cursor: pointer;
+    font-family: var(--font-body); transition: border-color 0.15s, color 0.15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-copiar:hover { border-color: var(--oro); color: var(--negro); }
+  .btn-copiar svg { width: 14px; height: 14px; }
+  .btn-row { display: flex; gap: 10px; margin-top: 4px; flex-wrap: wrap; }
+
+  /* ── EMPTY STATE ── */
+  .empty-state { text-align: center; padding: 32px 20px; color: var(--gris-3); font-size: 0.85rem; }
+  .empty-state svg { width: 36px; height: 36px; opacity: 0.3; margin-bottom: 10px; fill: var(--gris-3); display: block; margin: 0 auto 10px; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--rojo-dk); color: rgba(255,255,255,0.45);
+    font-size: 0.7rem; text-align: center; padding: 12px 20px; line-height: 1.6;
+  }
+  footer strong { color: rgba(255,255,255,0.7); }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(60px);
+    background: var(--negro); color: var(--blanco);
+    padding: 9px 18px; border-radius: 20px; font-size: 0.82rem;
+    opacity: 0; transition: opacity 0.2s, transform 0.2s;
+    z-index: 999; pointer-events: none; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 480px) {
+    .header-text h1 { font-size: 1.1rem; }
+    .penalidad-diaria-valor { font-size: 1.8rem; }
+    .detalle-grid { grid-template-columns: 1fr; }
+    .acumulado-row { flex-direction: column; align-items: flex-start; }
+    .acumulado-total { text-align: left; }
+    .card { padding: 18px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Banner de actualización disponible -->
+<div id="update-banner">
+  ⚡ Nueva versión disponible
+  <button onclick="aplicarActualizacion()">Actualizar ahora</button>
+  <button onclick="document.getElementById('update-banner').style.display='none'"
+    style="background:transparent;color:var(--negro);border:1.5px solid rgba(0,0,0,0.3)">✕</button>
+</div>
+
+<!-- Banner sin conexión -->
+<div id="offline-banner">📵 Sin conexión — operando con datos en caché</div>
+
+<header>
+  <div class="header-inner">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <h1>Penalidad por Mora</h1>
+      <p>Contrataciones Públicas · Perú</p>
+    </div>
+  </div>
+  <div class="norma-band">
+    <div class="norma-band-inner">Art. 120 del Reglamento de la Ley General de Contrataciones Públicas</div>
+  </div>
+</header>
+
+<main>
+  <!-- FORMULARIO -->
+  <div class="card">
+    <div class="card-title">Datos del contrato</div>
+    <div class="field-group">
+      <div class="field">
+        <label>Tipo de prestación</label>
+        <select id="tipo" onchange="actualizarSubopciones()">
+          <option value="">— Seleccionar —</option>
+          <option value="bs">Bienes y servicios</option>
+          <option value="obra">Obras</option>
+          <option value="consultoría">Consultoría de obras</option>
+        </select>
+      </div>
+      <div class="field" id="bloque-subtipo" style="display:none;">
+        <label>Rango de plazo <span class="hint">(para determinar F)</span></label>
+        <div class="plazo-opciones" id="plazo-opciones"></div>
+      </div>
+      <div class="field">
+        <label>Monto vigente del contrato <span class="hint">(S/)</span></label>
+        <input type="number" id="monto" placeholder="Ej: 150000.00" min="0" step="0.01" oninput="calcular()">
+      </div>
+      <div class="field">
+        <label>Plazo vigente del contrato <span class="hint">(días calendarios)</span></label>
+        <input type="number" id="plazo" placeholder="Ej: 90" min="1" step="1" oninput="sincronizarSubtipo(); calcular()">
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTADO -->
+  <div id="resultado-wrap">
+    <div class="resultado-card">
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+        Ingresa los datos del contrato para calcular.
+      </div>
+    </div>
+  </div>
+
+  <!-- FÓRMULA -->
+  <div class="formula-card">
+    <div class="card-title">Referencia — Fórmula legal</div>
+    <div class="formula-box">
+      <strong>Penalidad diaria</strong> &nbsp;=&nbsp;
+      <span class="fraction">
+        <span class="numerator">0.10 × monto</span>
+        <span class="denominator">F × plazo</span>
+      </span>
+    </div>
+    <table class="f-tabla" id="ftabla">
+      <thead>
+        <tr><th>Prestación</th><th>Condición de plazo</th><th>F</th></tr>
+      </thead>
+      <tbody>
+        <tr id="fr-bs"><td>Bienes y servicios</td><td>Cualquier plazo</td><td>0.40</td></tr>
+        <tr id="fr-o1"><td rowspan="3">Obras</td><td>≤ 60 días</td><td>0.40</td></tr>
+        <tr id="fr-o2"><td>61 – 120 días</td><td>0.25</td></tr>
+        <tr id="fr-o3"><td>&gt; 120 días</td><td>0.15</td></tr>
+        <tr id="fr-c1"><td rowspan="2">Consultoría de obras</td><td>≤ 60 días</td><td>0.40</td></tr>
+        <tr id="fr-c2"><td>&gt; 60 días</td><td>0.25</td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<footer>
+  Calculadora de uso referencial &nbsp;·&nbsp; <strong>Víctor Siu</strong> &nbsp;·&nbsp; Art. 120 RLGCP<br>
+  La penalidad acumulada no puede exceder el 10 % del monto del contrato (art. 120 concordado).
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  LÓGICA DE CÁLCULO
+// ═══════════════════════════════════════════════════════════
+const SUBTIPOS = {
+  obra: [
+    { id: 'o1', label: 'Plazo ≤ 60 días',    f: 0.40, cond: p => p <= 60 },
+    { id: 'o2', label: 'Plazo 61 – 120 días', f: 0.25, cond: p => p > 60 && p <= 120 },
+    { id: 'o3', label: 'Plazo > 120 días',    f: 0.15, cond: p => p > 120 },
+  ],
+  consultoría: [
+    { id: 'c1', label: 'Plazo ≤ 60 días', f: 0.40, cond: p => p <= 60 },
+    { id: 'c2', label: 'Plazo > 60 días',  f: 0.25, cond: p => p > 60 },
+  ],
+};
+
+let subtipoSeleccionado = null;
+
+function actualizarSubopciones() {
+  const tipo = document.getElementById('tipo').value;
+  const bloque = document.getElementById('bloque-subtipo');
+  const cont = document.getElementById('plazo-opciones');
+  subtipoSeleccionado = null;
+
+  if (tipo === 'obra' || tipo === 'consultoría') {
+    bloque.style.display = '';
+    cont.innerHTML = SUBTIPOS[tipo].map(o => `
+      <label class="radio-item" id="ri-${o.id}">
+        <input type="radio" name="subtipo" value="${o.id}" onchange="selSubtipo('${o.id}')">
+        ${o.label} <strong style="color:var(--rojo);margin-left:auto">F = ${o.f}</strong>
+      </label>
+    `).join('');
+    const p = parseFloat(document.getElementById('plazo').value);
+    if (p > 0) sincronizarSubtipo();
+  } else {
+    bloque.style.display = 'none';
+    cont.innerHTML = '';
+    calcular();
+  }
+}
+
+function selSubtipo(id) {
+  subtipoSeleccionado = id;
+  document.querySelectorAll('.radio-item').forEach(r => r.classList.remove('selected'));
+  const el = document.getElementById('ri-' + id);
+  if (el) el.classList.add('selected');
+  calcular();
+}
+
+function sincronizarSubtipo() {
+  const tipo = document.getElementById('tipo').value;
+  if (tipo !== 'obra' && tipo !== 'consultoría') return;
+  const p = parseFloat(document.getElementById('plazo').value);
+  if (!p || p <= 0) return;
+  const match = SUBTIPOS[tipo].find(o => o.cond(p));
+  if (match) selSubtipo(match.id);
+}
+
+function getF() {
+  const tipo = document.getElementById('tipo').value;
+  if (tipo === 'bs') return { f: 0.40, rowId: 'fr-bs' };
+  if (tipo === 'obra' || tipo === 'consultoría') {
+    if (!subtipoSeleccionado) return null;
+    const match = SUBTIPOS[tipo].find(o => o.id === subtipoSeleccionado);
+    return match ? { f: match.f, rowId: 'fr-' + subtipoSeleccionado } : null;
+  }
+  return null;
+}
+
+function fmt(n) {
+  return 'S/ ' + n.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function calcular() {
+  const tipo   = document.getElementById('tipo').value;
+  const monto  = parseFloat(document.getElementById('monto').value);
+  const plazo  = parseFloat(document.getElementById('plazo').value);
+  const wrap   = document.getElementById('resultado-wrap');
+
+  document.querySelectorAll('.f-tabla tbody tr').forEach(r => r.classList.remove('activo'));
+
+  if (!tipo || !monto || monto <= 0 || !plazo || plazo <= 0) {
+    wrap.innerHTML = emptyState(); return;
+  }
+  const fData = getF();
+  if (!fData) { wrap.innerHTML = emptyState('Selecciona el rango de plazo para determinar F.'); return; }
+
+  const rowEl = document.getElementById(fData.rowId);
+  if (rowEl) rowEl.classList.add('activo');
+
+  const pd   = (0.10 * monto) / (fData.f * plazo);
+  const tope = monto * 0.10;
+  const diasMaxTope = Math.floor(tope / pd);
+  const diasAnt = parseFloat(document.getElementById('dias-input')?.value || '') || 1;
+  const tipoLabel = { bs: 'Bienes y servicios', obra: 'Obras', consultoría: 'Consultoría de obras' }[tipo];
+
+  wrap.innerHTML = resultadoHTML(pd, fData.f, monto, plazo, tipoLabel, tope, diasAnt, diasMaxTope);
+}
+
+function emptyState(msg = 'Ingresa los datos del contrato para calcular.') {
+  return `<div class="resultado-card"><div class="empty-state">
+    <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+    <div>${msg}</div></div></div>`;
+}
+
+function topeBar(clase, icono, msg) {
+  return `<div class="tope-bar ${clase}"><span>${icono}</span><span>${msg}</span></div>`;
+}
+
+function resultadoHTML(pd, f, monto, plazo, tipoLabel, tope, dias, diasMaxTope) {
+  const acum = pd * dias;
+  const pct  = (acum / monto) * 100;
+  let topeHtml = '';
+  if (pct < 5)       topeHtml = topeBar('ok',     '✓', `Dentro del límite (${pct.toFixed(2)} % del monto). Tope del 10 % se alcanza en aprox. ${diasMaxTope} días.`);
+  else if (pct < 10) topeHtml = topeBar('warn',   '⚠', `Atención: penalidad acumulada es ${pct.toFixed(2)} % del monto. Tope del 10 % se alcanzaría en aprox. ${diasMaxTope} días.`);
+  else               topeHtml = topeBar('danger',  '✕', `Supera el 10 % del monto (${pct.toFixed(2)} %). Riesgo de resolución de contrato. Tope legal: ${fmt(tope)}.`);
+
+  return `
+  <div class="resultado-card">
+    <div class="resultado-header">
+      <span>Resultado del cálculo</span>
+      <span>F = ${f}</span>
+    </div>
+    <div class="resultado-body">
+      <div class="penalidad-diaria-label">Penalidad diaria</div>
+      <div class="penalidad-diaria-valor"><span class="soles">S/</span>${pd.toLocaleString('es-PE',{minimumFractionDigits:4,maximumFractionDigits:4})}</div>
+      <div class="detalle-grid">
+        <div class="detalle-item"><span class="det-label">Tipo de prestación</span><span class="det-val">${tipoLabel}</span></div>
+        <div class="detalle-item"><span class="det-label">Factor F aplicado</span><span class="det-val">${f}</span></div>
+        <div class="detalle-item"><span class="det-label">Monto del contrato</span><span class="det-val">${fmt(monto)}</span></div>
+        <div class="detalle-item"><span class="det-label">Plazo contractual</span><span class="det-val">${plazo} días</span></div>
+        <div class="detalle-item"><span class="det-label">Tope máximo (10 %)</span><span class="det-val">${fmt(tope)}</span></div>
+        <div class="detalle-item"><span class="det-label">Días para alcanzar tope</span><span class="det-val">aprox. ${diasMaxTope} días</span></div>
+      </div>
+      <div class="acumulado-row">
+        <div class="acumulado-dias">
+          <label>Días de atraso a calcular</label>
+          <div class="dias-input-row">
+            <input type="number" id="dias-input" value="${dias}" min="1" step="1"
+              oninput="recalcAcumulado(this.value)"
+              style="width:90px;padding:8px 10px;font-size:1rem;text-align:center;
+                     border:1.5px solid var(--gris-2);border-radius:6px;font-family:var(--font-body)">
+          </div>
+        </div>
+        <div class="acumulado-total">
+          <div class="label">Penalidad acumulada</div>
+          <div class="valor" id="acum-val">${fmt(acum)}</div>
+          <div style="font-size:0.72rem;color:var(--gris-3);margin-top:2px" id="acum-pct">${pct.toFixed(2)} % del monto</div>
+        </div>
+      </div>
+      ${topeHtml}
+      <div class="btn-row" style="margin-top:16px">
+        <button class="btn-copiar" onclick="copiarResumen(${pd},${monto},${plazo},${f},'${tipoLabel}',${tope})">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+          Copiar resumen
+        </button>
+        <button class="btn-reset" onclick="reiniciar()">Limpiar</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function recalcAcumulado(dias) {
+  dias = parseFloat(dias) || 0;
+  const monto = parseFloat(document.getElementById('monto').value);
+  const plazo = parseFloat(document.getElementById('plazo').value);
+  const fData = getF();
+  if (!fData || !monto || !plazo) return;
+  const pd   = (0.10 * monto) / (fData.f * plazo);
+  const acum = pd * dias;
+  const pct  = (acum / monto) * 100;
+  const tope = monto * 0.10;
+  const diasMaxTope = Math.floor(tope / pd);
+  const el = document.getElementById('acum-val');
+  const ep = document.getElementById('acum-pct');
+  if (el) el.textContent = fmt(acum);
+  if (ep) ep.textContent = pct.toFixed(2) + ' % del monto';
+  const topeEl = document.querySelector('.tope-bar');
+  if (topeEl) {
+    let html = '';
+    if (pct < 5)       html = topeBar('ok',    '✓', `Dentro del límite (${pct.toFixed(2)} % del monto). Tope del 10 % se alcanza en aprox. ${diasMaxTope} días.`);
+    else if (pct < 10) html = topeBar('warn',  '⚠', `Atención: penalidad acumulada es ${pct.toFixed(2)} % del monto. Tope del 10 % se alcanzaría en aprox. ${diasMaxTope} días.`);
+    else               html = topeBar('danger', '✕', `Supera el 10 % del monto (${pct.toFixed(2)} %). Riesgo de resolución. Tope legal: ${fmt(tope)}.`);
+    topeEl.outerHTML = html;
+  }
+}
+
+function copiarResumen(pd, monto, plazo, f, tipo, tope) {
+  const dias = parseFloat(document.getElementById('dias-input')?.value || 1);
+  const acum = pd * dias;
+  const texto = [
+    '📋 PENALIDAD POR MORA — Art. 120 RLGCP',
+    `Tipo de prestación : ${tipo}`,
+    `Factor F           : ${f}`,
+    `Monto del contrato : S/ ${monto.toLocaleString('es-PE',{minimumFractionDigits:2})}`,
+    `Plazo vigente      : ${plazo} días`,
+    '─────────────────────────────────────',
+    `Penalidad diaria   : S/ ${pd.toLocaleString('es-PE',{minimumFractionDigits:4,maximumFractionDigits:4})}`,
+    `Días de atraso     : ${dias}`,
+    `Penalidad acumulada: S/ ${acum.toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2})}`,
+    `Tope máximo (10 %) : S/ ${tope.toLocaleString('es-PE',{minimumFractionDigits:2})}`,
+  ].join('\n');
+  navigator.clipboard.writeText(texto).then(() => showToast('Resumen copiado al portapapeles'));
+}
+
+function reiniciar() {
+  document.getElementById('tipo').value  = '';
+  document.getElementById('monto').value = '';
+  document.getElementById('plazo').value = '';
+  document.getElementById('bloque-subtipo').style.display = 'none';
+  document.getElementById('plazo-opciones').innerHTML = '';
+  subtipoSeleccionado = null;
+  document.querySelectorAll('.f-tabla tbody tr').forEach(r => r.classList.remove('activo'));
+  document.getElementById('resultado-wrap').innerHTML = emptyState();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PWA — SERVICE WORKER
+// ═══════════════════════════════════════════════════════════
+let swRegistration = null;
+let newWorkerWaiting = null;
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => {
+        swRegistration = reg;
+
+        // ¿Ya hay un SW esperando activar? (recarga sin cambio de pestaña)
+        if (reg.waiting) mostrarBannerActualizacion(reg.waiting);
+
+        // Nuevo SW instalado mientras la app está abierta
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              mostrarBannerActualizacion(newWorker);
+            }
+          });
+        });
+
+        // Detectar cuando el nuevo SW tomó control (tras skipWaiting)
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          window.location.reload();
+        });
+      })
+      .catch(err => console.warn('SW no registrado:', err));
+
+    // Verificar actualizaciones cada 60 min
+    setInterval(() => swRegistration && swRegistration.update(), 60 * 60 * 1000);
+  });
+}
+
+function mostrarBannerActualizacion(worker) {
+  newWorkerWaiting = worker;
+  document.getElementById('update-banner').style.display = 'flex';
+}
+
+function aplicarActualizacion() {
+  if (newWorkerWaiting) {
+    newWorkerWaiting.postMessage({ type: 'SKIP_WAITING' });
+  }
+}
+
+// ── Estado de conexión ──────────────────────────────────────
+function actualizarBannerConexion() {
+  const banner = document.getElementById('offline-banner');
+  banner.style.display = navigator.onLine ? 'none' : 'block';
+}
+window.addEventListener('online',  actualizarBannerConexion);
+window.addEventListener('offline', actualizarBannerConexion);
+actualizarBannerConexion();
+</script>
+</body>
+</html>

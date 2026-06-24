@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Fondo rojo institucional -->
+  <rect width="512" height="512" rx="80" fill="#7A0000"/>
+  <!-- Símbolo de balanza -->
+  <g fill="#C8A84B">
+    <!-- Palo central -->
+    <rect x="244" y="100" width="24" height="280" rx="8"/>
+    <!-- Base -->
+    <rect x="160" y="370" width="192" height="22" rx="8"/>
+    <!-- Viga horizontal -->
+    <rect x="100" y="155" width="312" height="20" rx="8"/>
+    <!-- Platillo izquierdo - cuerda -->
+    <rect x="112" y="172" width="10" height="60" rx="4"/>
+    <!-- Platillo derecho - cuerda -->
+    <rect x="390" y="172" width="10" height="60" rx="4"/>
+    <!-- Platillo izquierdo -->
+    <ellipse cx="117" cy="240" rx="52" ry="14" fill="#C8A84B"/>
+    <!-- Platillo derecho -->
+    <ellipse cx="395" cy="240" rx="52" ry="14" fill="#C8A84B"/>
+  </g>
+  <!-- Texto pequeño -->
+  <text x="256" y="430" font-family="Georgia,serif" font-size="36" fill="#E8CC7B" text-anchor="middle" font-weight="bold">ART. 120</text>
+</svg>
